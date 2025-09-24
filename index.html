@@ -7,181 +7,38 @@
   <link rel="icon" type="image/png" sizes="32x32" href="Icons/hour.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ---------------- Global ---------------- */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-    body { 
-      height: 100vh; width: 100vw; overflow: hidden; 
-      background: linear-gradient(120deg, #1e3c72, #2a5298); 
-      display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; 
-      color: white; transition: background 1s ease; 
-    }
-
-    /* ---------------- Timer ---------------- */
-    .timer { 
-      font-size: 6rem; font-weight: bold; text-align: center; 
-      text-shadow: 0 0 15px rgba(255,255,255,0.5); margin-bottom: 20px; 
-      transition: color 0.3s ease;
-    }
-
-    /* ---------------- Controls ---------------- */
-    .controls button { 
-      margin: 0 10px; padding: 10px 20px; font-size: 1rem; 
-      border: none; border-radius: 8px; cursor: pointer; 
-      background: rgba(255,255,255,0.2); color: white; 
-      backdrop-filter: blur(8px); transition: background 0.3s, transform 0.2s; 
-    }
-    .controls button:hover { 
-      background: rgba(255,255,255,0.4); transform: scale(1.05); 
-    }
-
-    /* ---------------- Navbar ---------------- */
-    .navbar {
-      position: fixed; top: 50%; right: 20px; transform: translateY(-50%);
-      display: flex; flex-direction: column; gap: 15px; z-index: 1000;
-    }
-
-    .nav-item {
-      background: rgba(255,255,255,0.2); 
-      backdrop-filter: blur(10px);
-      border-radius: 50%; width: 70px; height: 70px;
-      display: flex; align-items: center; justify-content: center; 
-      cursor: pointer; transition: all 0.3s ease;
-      position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    }
-
-    .nav-item:hover { 
-      transform: scale(1.15); 
-      background: rgba(255,255,255,0.35);
-    }
-
-    .nav-item img.icon {
-      width: 96px; height: 96px; object-fit: contain; pointer-events: none;
-      filter: drop-shadow(0 0 4px rgba(0,0,0,0.7)); 
-      transition: transform 0.3s ease, filter 0.3s ease;
-    }
-
-    .nav-item:hover img.icon { 
-      transform: scale(1.1); 
-      filter: drop-shadow(0 0 6px rgba(0,0,0,0.9));
-    }
-
-    /* ---------------- Tooltip ---------------- */
-    .tooltip {
-      position: absolute; right: 80px; background: rgba(0,0,0,0.85); 
-      color: #fff; font-weight: 500; padding: 6px 12px; 
-      border-radius: 8px; opacity: 0; pointer-events: none; 
-      transition: opacity 0.3s; white-space: nowrap;
-    }
+    body { height: 100vh; width: 100vw; overflow: hidden; background: linear-gradient(120deg, #1e3c72, #2a5298); display: flex; align-items: center; justify-content: center; color: white; transition: background 1s ease; flex-direction: column; }
+    .timer { font-size: 6rem; font-weight: bold; text-align: center; text-shadow: 0 0 15px rgba(255, 255, 255, 0.5); margin-bottom: 20px; }
+    .controls button { margin: 0 10px; padding: 10px 20px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; background: rgba(255,255,255,0.2); color: white; backdrop-filter: blur(8px); transition: background 0.3s, transform 0.2s; }
+    .controls button:hover { background: rgba(255,255,255,0.4);  transform: scale(1.05);}
+    .navbar { position: fixed; top: 50%; right: 20px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 15px; }
+    .nav-item { background: rgba(255,255,255,0.3); backdrop-filter: blur(10px); border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-size: 1.5rem; }
+    .nav-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.35); }
+    .tooltip { position: absolute; right: 70px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 8px; opacity: 0; pointer-events: none; transition: opacity 0.3s; white-space: nowrap; }
     .nav-item:hover .tooltip { opacity: 1; }
-
-    /* ---------------- Toast ---------------- */
-    .toast { 
-      position: fixed; bottom: 20px; right: 20px; 
-      background: rgba(0,0,0,0.8); color: white; 
-      padding: 12px 20px; border-radius: 12px; 
-      opacity: 0; transform: translateY(20px); transition: all 0.5s ease; 
-    }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 12px 20px; border-radius: 12px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
     .toast.show { opacity: 1; transform: translateY(0); }
-
-    /* ---------------- Reminder Box ---------------- */
-    .reminder-box { 
-      position: fixed; bottom: 100px; right: 20px; 
-      background: rgba(0,0,0,0.7); padding: 15px; border-radius: 12px; 
-      display: none; flex-direction: column; gap: 10px;
-    }
+    .reminder-box { position: fixed; bottom: 100px; right: 20px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 12px; display: none; flex-direction: column; gap: 10px; }
     .reminder-box input { padding: 8px; border-radius: 6px; border: none; outline: none; text-align: center; }
-    .reminder-box button { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.3); color: white; cursor: pointer; transition: background 0.3s; }
-    .reminder-box button:hover { background: rgba(255,255,255,0.5); }
-
-    /* ---------------- Stats Panel ---------------- */
-    .stats-panel { 
-      position: fixed; right: -400px; top: 0; width: 350px; height: 100%; 
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(12px); 
-      transition: right 0.4s ease; padding: 20px; border-radius: 20px 0 0 20px; 
-      overflow-y: auto;
-    }
+    .reminder-box button { padding: 8px; border: none; border-radius: 6px; background: rgba(255,255,255,0.3); color: white; cursor: pointer; }
+    .stats-panel { position: fixed; right: -400px; top: 0; width: 350px; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px); transition: right 0.4s ease; padding: 20px; border-radius: 20px 0 0 20px; overflow-y: auto; }
     .stats-panel.open { right: 0; }
-    .stats-panel h2 { margin-bottom: 15px; font-size: 1.5rem; }
-    .stats-panel button { background: rgba(255,255,255,0.2); border:none; padding:5px 10px; border-radius:6px; cursor:pointer; color:white; transition: background 0.3s; }
-    .stats-panel button:hover { background: rgba(255,255,255,0.4); }
-
-    /* ---------------- Theme Picker ---------------- */
     .theme-picker { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-    .theme-picker input[type=color] { padding:4px; border:none; border-radius:4px; cursor:pointer; }
-    .theme-picker button { padding:6px 12px; border:none; border-radius:6px; background: rgba(255,255,255,0.3); color:white; cursor:pointer; transition: background 0.3s; }
-    .theme-picker button:hover { background: rgba(255,255,255,0.5); }
-
-    /* ---------------- Small Clock ---------------- */
-    .small-clock { 
-      position: fixed; top: 10px; left: 10px; 
-      background: rgba(0,0,0,0.4); padding: 5px 10px; 
-      border-radius: 8px; font-size: 1rem; 
-      text-shadow: 0 0 5px rgba(0,0,0,0.6);
-    }
-
-    /* ---------------- Responsive ---------------- */
+    .small-clock { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 8px; font-size: 1rem; }
+    .icon {
+  width: 96px;
+  height: 96px;
+  object-fit: contain; 
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.9));
+}
     @media (max-width: 600px) {
       .timer { font-size: 4rem; }
-      .nav-item { width: 60px; height: 60px; font-size: 1.2rem; }
-      .nav-item img.icon { width: 36px; height: 36px; }
+      .nav-item { width: 50px; height: 50px; font-size: 1.2rem; }
       .stats-panel { width: 100%; border-radius: 0; }
     }
   </style>
-</head>
-<body>
-  <div class="timer" id="timer">00:00:00</div>
-  <div class="controls" id="controls">
-    <button id="startBtn" onclick="startTimer()">Start</button>
-    <button id="pauseBtn" onclick="pauseTimer()" style="display:none">Pause</button>
-    <button id="resumeBtn" onclick="resumeTimer()" style="display:none">Resume</button>
-    <button id="resetBtn" onclick="resetTimer()" style="display:none">Reset</button>
-  </div>
-
-  <div class="small-clock" id="smallClock"></div>
-
-  <div class="navbar">
-    <div class="nav-item" onclick="toggleFocusMode()">
-      <img src="Icons/foc.png" class="icon"><span class="tooltip">Focus Mode</span>
-    </div>
-    <div class="nav-item" onclick="toggleThemes()">
-      <img src="Icons/cus.png" class="icon"><span class="tooltip">Themes</span>
-    </div>
-    <div class="nav-item" onclick="toggleCustomTheme()">
-      <img src="Icons/them.png" class="icon"><span class="tooltip">Custom Theme</span>
-    </div>
-    <div class="nav-item" onclick="toggleReminderBox()">
-      <img src="Icons/rem.png" class="icon"><span class="tooltip">Set Reminder</span>
-    </div>
-    <div class="nav-item" onclick="toggleStats()">
-      <img src="Icons/stats.png" class="icon"><span class="tooltip">Stats</span>
-    </div>
-  </div>
-
-  <div class="reminder-box" id="reminderBox">
-    <input type="number" id="reminderMinutes" placeholder="Minutes" min="1">
-    <button onclick="setCustomReminder()">Set Reminder</button>
-  </div>
-
-  <div class="stats-panel" id="statsPanel">
-    <button onclick="toggleStats()">Close ✖</button>
-    <h2>Your Stats</h2>
-    <p><b>Today's Study Time:</b> <span id="todayTime">0m</span></p>
-    <p><b>Completed Sessions:</b> <span id="sessions">0</span></p>
-    <p><b>Streak:</b> <span id="streak">0 days</span></p>
-    <canvas id="weeklyChart"></canvas>
-  </div>
-
-  <div class="toast" id="toast">Hello!</div>
-
-  <div class="theme-picker" id="themePicker" style="display:none;">
-    <label>Background Color: <input type="color" id="bgColorPicker"></label>
-    <label>Clock Color: <input type="color" id="clockColorPicker"></label>
-    <button onclick="applyCustomTheme()">Apply Theme</button>
-  </div>
-
-  <script>
-    // ---------------- Timer & Stats ----------------
 </head>
 <body>
   <div class="timer" id="timer">00:00:00</div>
