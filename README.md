@@ -23,7 +23,7 @@
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/strange-exe/hour-glass.git
+git clone https://github.com/strange-exe/hourglass.git
 ```
 
 2. Open `index.html` in your favorite browser.
